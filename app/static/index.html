@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Indie Fantrax - Submit a Recommendation</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎵 Indie Fantrax</h1>
+            <p class="subtitle">Share your music discoveries with the group</p>
+        </header>
+
+        <main>
+            <form id="recommendation-form">
+                <div class="form-group">
+                    <label for="name">Your Name</label>
+                    <input type="text" id="name" name="name" required placeholder="Who's recommending this?">
+                </div>
+
+                <div class="form-group">
+                    <label for="album_url">Album Link</label>
+                    <input type="url" id="album_url" name="album_url" required
+                           placeholder="Paste a Spotify or Apple Music link">
+                    <span class="hint">We'll automatically find it on other platforms</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="context">Why are you recommending this?</label>
+                    <textarea id="context" name="context" required rows="4"
+                              placeholder="What's the vibe? Why should we listen?"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="access_code">Access Code</label>
+                    <input type="text" id="access_code" name="access_code" required
+                           placeholder="Enter the group access code">
+                </div>
+
+                <button type="submit" id="submit-btn">
+                    <span class="btn-text">Submit Recommendation</span>
+                    <span class="btn-loading" hidden>Submitting...</span>
+                </button>
+            </form>
+
+            <div id="result" class="result" hidden>
+                <div class="result-success" hidden>
+                    <h3>✅ Recommendation Submitted!</h3>
+                    <p id="result-album"></p>
+                    <p class="result-note">Your recommendation will be posted on the next Mon/Wed/Fri at 7am.</p>
+                </div>
+                <div class="result-error" hidden>
+                    <h3>❌ Error</h3>
+                    <p id="error-message"></p>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>Recommendations are posted to the group chat on Monday, Wednesday, and Friday at 7am UK time.</p>
+        </footer>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
