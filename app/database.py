@@ -23,6 +23,7 @@ class Recommendation(Base):
     submitted_at = Column(DateTime, default=datetime.utcnow)
     posted_at = Column(DateTime, nullable=True)
     is_posted = Column(Boolean, default=False)
+    post_number = Column(Integer, nullable=True)
 
 
 class BotSettings(Base):

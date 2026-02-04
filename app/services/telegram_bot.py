@@ -5,6 +5,7 @@ from telegram.constants import ParseMode
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 import pytz
+from sqlalchemy import func
 
 from app.config import settings
 from app.database import SessionLocal, Recommendation, BotSettings
@@ -42,11 +43,11 @@ async def post_recommendation():
 
     db = SessionLocal()
     try:
-        # Get oldest unposted recommendation
+        # Get a random unposted recommendation
         recommendation = (
             db.query(Recommendation)
             .filter(Recommendation.is_posted == False)
-            .order_by(Recommendation.submitted_at.asc())
+            .order_by(func.random())
             .first()
         )
 
@@ -54,15 +55,19 @@ async def post_recommendation():
             logger.info("No pending recommendations to post")
             return
 
+        # Calculate the next post number
+        max_post_number = db.query(func.max(Recommendation.post_number)).scalar() or 0
+        next_post_number = max_post_number + 1
+
         # Format the message
-        message = format_recommendation_message(recommendation)
+        message = format_recommendation_message(recommendation, next_post_number)
 
         # Send to Telegram
         bot = get_bot()
 
         if recommendation.album_art_url:
             # Send with album art
-            await bot.send_photo(
+            sent_message = await bot.send_photo(
                 chat_id=settings.TELEGRAM_CHAT_ID,
                 photo=recommendation.album_art_url,
                 caption=message,
@@ -70,18 +75,26 @@ async def post_recommendation():
             )
         else:
             # Send text only
-            await bot.send_message(
+            sent_message = await bot.send_message(
                 chat_id=settings.TELEGRAM_CHAT_ID,
                 text=message,
                 parse_mode=ParseMode.HTML,
             )
 
+        # Pin the message (disable_notification to avoid pinging everyone)
+        await bot.pin_chat_message(
+            chat_id=settings.TELEGRAM_CHAT_ID,
+            message_id=sent_message.message_id,
+            disable_notification=True,
+        )
+
         # Mark as posted
         recommendation.is_posted = True
         recommendation.posted_at = datetime.utcnow()
+        recommendation.post_number = next_post_number
         db.commit()
 
-        logger.info(f"Posted recommendation: {recommendation.album_title} by {recommendation.artist_name}")
+        logger.info(f"Posted recommendation #{next_post_number}: {recommendation.album_title} by {recommendation.artist_name}")
 
     except Exception as e:
         logger.error(f"Error posting recommendation: {e}")
@@ -90,9 +103,11 @@ async def post_recommendation():
         db.close()
 
 
-def format_recommendation_message(rec: Recommendation) -> str:
+def format_recommendation_message(rec: Recommendation, post_number: int) -> str:
     """Format a recommendation for Telegram posting."""
     lines = [
+        f"<b>Indie Fantrax Recommends - No. {post_number}</b>",
+        "",
         f"🎵 <b>{rec.album_title or 'Unknown Album'}</b>",
         f"👤 {rec.artist_name or 'Unknown Artist'}",
         "",

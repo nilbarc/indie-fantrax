@@ -181,7 +181,7 @@ footer {
 
 /* Admin page styles */
 .admin-container {
-    max-width: 400px;
+    max-width: 600px;
 }
 
 .login-form, .admin-panel {
@@ -221,6 +221,39 @@ footer {
     background: linear-gradient(135deg, #1db954 0%, #1ed760 100%);
 }
 
+.trigger-section {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.admin-btn.trigger-btn {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+}
+
+.admin-btn.trigger-btn.confirm-pending {
+    background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+    animation: pulse 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes pulse {
+    from { opacity: 1; }
+    to { opacity: 0.7; }
+}
+
+.trigger-status {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.trigger-status.success {
+    color: #1db954;
+}
+
+.trigger-status.error {
+    color: #e74c3c;
+}
+
 .login-error {
     color: #e74c3c;
     margin-top: 1rem;
@@ -237,6 +270,75 @@ footer {
 
 .back-link a:hover {
     text-decoration: underline;
+}
+
+/* Posted albums list */
+.posted-albums-section {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: left;
+}
+
+.posted-albums-section h3 {
+    text-align: center;
+    margin-bottom: 1rem;
+    color: #fff;
+}
+
+.album-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.album-list li {
+    padding: 0.75rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.5rem;
+}
+
+.album-list li:last-child {
+    border-bottom: none;
+}
+
+.album-number {
+    color: #1db954;
+    font-weight: 600;
+    min-width: 2.5rem;
+}
+
+.album-link {
+    color: #fff;
+    text-decoration: none;
+    flex: 1;
+}
+
+.album-link:hover {
+    color: #1db954;
+    text-decoration: underline;
+}
+
+.album-submitter {
+    color: #666;
+    font-size: 0.85rem;
+    width: 100%;
+    padding-left: 3rem;
+}
+
+.no-albums, .loading-text, .error-text {
+    text-align: center;
+    color: #888;
+    padding: 1rem;
+}
+
+.error-text {
+    color: #e74c3c;
 }
 
 @media (max-width: 480px) {

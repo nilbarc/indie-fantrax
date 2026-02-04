@@ -26,6 +26,18 @@
                 <p>Bot Status:</p>
                 <div id="status-badge" class="status-badge status-active">Active</div>
                 <button id="action-btn" class="admin-btn pause-btn">Pause Bot</button>
+
+                <div class="trigger-section">
+                    <button id="trigger-btn" class="admin-btn trigger-btn">Post Now</button>
+                    <p id="trigger-status" class="trigger-status" hidden></p>
+                </div>
+
+                <div class="posted-albums-section">
+                    <h3>Posted Albums</h3>
+                    <div id="posted-albums-list" class="posted-albums-list">
+                        <p class="loading-text">Loading...</p>
+                    </div>
+                </div>
             </div>
 
             <p class="back-link"><a href="/">&larr; Back to main page</a></p>
@@ -40,8 +52,11 @@
         const loginError = document.getElementById('login-error');
         const statusBadge = document.getElementById('status-badge');
         const actionBtn = document.getElementById('action-btn');
+        const triggerBtn = document.getElementById('trigger-btn');
+        const triggerStatus = document.getElementById('trigger-status');
 
         let isPaused = false;
+        let triggerConfirmPending = false;
 
         function getPassword() {
             return sessionStorage.getItem('adminPassword') || '';
@@ -80,8 +95,39 @@
                 const data = await response.json();
                 isPaused = data.is_paused;
                 updateUI();
+                await fetchPostedAlbums();
             } catch (error) {
                 console.error('Error fetching status:', error);
+            }
+        }
+
+        async function fetchPostedAlbums() {
+            const listEl = document.getElementById('posted-albums-list');
+            try {
+                const response = await fetch('/api/admin/posted');
+                const albums = await response.json();
+
+                if (albums.length === 0) {
+                    listEl.innerHTML = '<p class="no-albums">No albums posted yet.</p>';
+                    return;
+                }
+
+                let html = '<ul class="album-list">';
+                for (const album of albums) {
+                    const link = album.spotify_url || album.apple_music_url || album.songlink_url || '#';
+                    html += `<li>
+                        <span class="album-number">#${album.post_number}</span>
+                        <a href="${link}" target="_blank" class="album-link">
+                            <strong>${album.album_title || 'Unknown'}</strong> - ${album.artist_name || 'Unknown'}
+                        </a>
+                        <span class="album-submitter">by ${album.submitter_name}</span>
+                    </li>`;
+                }
+                html += '</ul>';
+                listEl.innerHTML = html;
+            } catch (error) {
+                console.error('Error fetching posted albums:', error);
+                listEl.innerHTML = '<p class="error-text">Error loading albums.</p>';
             }
         }
 
@@ -152,6 +198,50 @@
         });
 
         actionBtn.addEventListener('click', togglePause);
+
+        triggerBtn.addEventListener('click', async () => {
+            if (!triggerConfirmPending) {
+                // First click - ask for confirmation
+                triggerConfirmPending = true;
+                triggerBtn.textContent = 'Click again to confirm';
+                triggerBtn.classList.add('confirm-pending');
+                triggerStatus.hidden = true;
+
+                // Reset after 3 seconds if not confirmed
+                setTimeout(() => {
+                    if (triggerConfirmPending) {
+                        triggerConfirmPending = false;
+                        triggerBtn.textContent = 'Post Now';
+                        triggerBtn.classList.remove('confirm-pending');
+                    }
+                }, 3000);
+            } else {
+                // Second click - trigger the post
+                triggerConfirmPending = false;
+                triggerBtn.disabled = true;
+                triggerBtn.textContent = 'Posting...';
+                triggerBtn.classList.remove('confirm-pending');
+
+                try {
+                    const response = await fetch('/api/trigger-post', { method: 'POST' });
+                    const data = await response.json();
+
+                    triggerStatus.textContent = 'Post triggered successfully!';
+                    triggerStatus.className = 'trigger-status success';
+                    triggerStatus.hidden = false;
+
+                    // Refresh the posted albums list
+                    await fetchPostedAlbums();
+                } catch (error) {
+                    triggerStatus.textContent = 'Error triggering post';
+                    triggerStatus.className = 'trigger-status error';
+                    triggerStatus.hidden = false;
+                } finally {
+                    triggerBtn.disabled = false;
+                    triggerBtn.textContent = 'Post Now';
+                }
+            }
+        });
 
         // Check if already logged in
         const savedPassword = getPassword();

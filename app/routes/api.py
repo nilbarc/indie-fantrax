@@ -195,3 +195,43 @@ async def admin_resume(request: AdminActionRequest, db: Session = Depends(get_db
 
     db.commit()
     return {"success": True, "message": "Bot resumed"}
+
+
+class PostedAlbumItem(BaseModel):
+    post_number: int
+    album_title: str | None
+    artist_name: str | None
+    submitter_name: str
+    posted_at: str
+    spotify_url: str | None
+    apple_music_url: str | None
+    songlink_url: str | None
+
+    class Config:
+        from_attributes = True
+
+
+@router.get("/admin/posted", response_model=list[PostedAlbumItem])
+async def get_posted_albums(db: Session = Depends(get_db)):
+    """Get list of all posted albums."""
+    recommendations = (
+        db.query(Recommendation)
+        .filter(Recommendation.is_posted == True)
+        .filter(Recommendation.post_number.isnot(None))
+        .order_by(Recommendation.post_number.asc())
+        .all()
+    )
+
+    return [
+        PostedAlbumItem(
+            post_number=r.post_number,
+            album_title=r.album_title,
+            artist_name=r.artist_name,
+            submitter_name=r.submitter_name,
+            posted_at=r.posted_at.isoformat() if r.posted_at else "",
+            spotify_url=r.spotify_url,
+            apple_music_url=r.apple_music_url,
+            songlink_url=r.songlink_url,
+        )
+        for r in recommendations
+    ]
