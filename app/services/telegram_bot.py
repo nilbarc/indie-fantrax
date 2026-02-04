@@ -7,7 +7,7 @@ from apscheduler.triggers.cron import CronTrigger
 import pytz
 
 from app.config import settings
-from app.database import SessionLocal, Recommendation
+from app.database import SessionLocal, Recommendation, BotSettings
 
 logger = logging.getLogger(__name__)
 
@@ -18,10 +18,26 @@ def get_bot() -> Bot:
     return Bot(token=settings.TELEGRAM_BOT_TOKEN)
 
 
+def is_bot_paused() -> bool:
+    """Check if the bot is currently paused."""
+    db = SessionLocal()
+    try:
+        bot_settings = db.query(BotSettings).first()
+        if bot_settings:
+            return bot_settings.is_paused
+        return False
+    finally:
+        db.close()
+
+
 async def post_recommendation():
     """Post the oldest unposted recommendation to Telegram."""
     if not settings.TELEGRAM_BOT_TOKEN or not settings.TELEGRAM_CHAT_ID:
         logger.warning("Telegram credentials not configured, skipping post")
+        return
+
+    if is_bot_paused():
+        logger.info("Bot is paused, skipping post")
         return
 
     db = SessionLocal()

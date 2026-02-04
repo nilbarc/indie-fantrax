@@ -10,14 +10,33 @@
     <div class="container">
         <header>
             <h1>🎵 Indie Fantrax</h1>
-            <p class="subtitle">Share your music discoveries with the group</p>
+            <p class="subtitle">Share your music with the group</p>
         </header>
 
         <main>
             <form id="recommendation-form">
                 <div class="form-group">
                     <label for="name">Your Name</label>
-                    <input type="text" id="name" name="name" required placeholder="Who's recommending this?">
+                    <select id="name" name="name" required>
+                        <option value="">Select your name...</option>
+                        <option value="Adrian Read">Adrian Read</option>
+                        <option value="Bamos">Bamos</option>
+                        <option value="Chris Duncan">Chris Duncan</option>
+                        <option value="Colin Roberts">Colin Roberts</option>
+                        <option value="David Martin">David Martin</option>
+                        <option value="Gareth Dobson">Gareth Dobson</option>
+                        <option value="James Moore">James Moore</option>
+                        <option value="Jamie Milton">Jamie Milton</option>
+                        <option value="Jonny Simon">Jonny Simon</option>
+                        <option value="Kasra Mowlavi">Kasra Mowlavi</option>
+                        <option value="Kris De Souza">Kris De Souza</option>
+                        <option value="Martin Gritton">Martin Gritton</option>
+                        <option value="Nathan Roberts">Nathan Roberts</option>
+                        <option value="Pete Flinton">Pete Flinton</option>
+                        <option value="Ryan Lofthouse">Ryan Lofthouse</option>
+                        <option value="Tom Cotton">Tom Cotton</option>
+                        <option value="whiskas">whiskas</option>
+                    </select>
                 </div>
 
                 <div class="form-group">
@@ -60,6 +79,7 @@
 
         <footer>
             <p>Recommendations are posted to the group chat on Monday, Wednesday, and Friday at 7am UK time.</p>
+            <p class="admin-link"><a href="/admin">Admin</a></p>
         </footer>
     </div>
 

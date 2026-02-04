@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Indie Fantrax</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container admin-container">
+        <header>
+            <h1>Admin</h1>
+        </header>
+
+        <main>
+            <div id="login-section" class="login-form">
+                <div class="form-group">
+                    <label for="password">Admin Password</label>
+                    <input type="password" id="password" name="password" placeholder="Enter admin password">
+                </div>
+                <button id="login-btn">Login</button>
+                <p id="login-error" class="login-error" hidden></p>
+            </div>
+
+            <div id="admin-section" class="admin-panel" hidden>
+                <p>Bot Status:</p>
+                <div id="status-badge" class="status-badge status-active">Active</div>
+                <button id="action-btn" class="admin-btn pause-btn">Pause Bot</button>
+            </div>
+
+            <p class="back-link"><a href="/">&larr; Back to main page</a></p>
+        </main>
+    </div>
+
+    <script>
+        const loginSection = document.getElementById('login-section');
+        const adminSection = document.getElementById('admin-section');
+        const passwordInput = document.getElementById('password');
+        const loginBtn = document.getElementById('login-btn');
+        const loginError = document.getElementById('login-error');
+        const statusBadge = document.getElementById('status-badge');
+        const actionBtn = document.getElementById('action-btn');
+
+        let isPaused = false;
+
+        function getPassword() {
+            return sessionStorage.getItem('adminPassword') || '';
+        }
+
+        function setPassword(password) {
+            sessionStorage.setItem('adminPassword', password);
+        }
+
+        function showError(message) {
+            loginError.textContent = message;
+            loginError.hidden = false;
+        }
+
+        function hideError() {
+            loginError.hidden = true;
+        }
+
+        function updateUI() {
+            if (isPaused) {
+                statusBadge.textContent = 'Paused';
+                statusBadge.className = 'status-badge status-paused';
+                actionBtn.textContent = 'Resume Bot';
+                actionBtn.className = 'admin-btn resume-btn';
+            } else {
+                statusBadge.textContent = 'Active';
+                statusBadge.className = 'status-badge status-active';
+                actionBtn.textContent = 'Pause Bot';
+                actionBtn.className = 'admin-btn pause-btn';
+            }
+        }
+
+        async function fetchStatus() {
+            try {
+                const response = await fetch('/api/admin/status');
+                const data = await response.json();
+                isPaused = data.is_paused;
+                updateUI();
+            } catch (error) {
+                console.error('Error fetching status:', error);
+            }
+        }
+
+        async function login(password) {
+            try {
+                const response = await fetch('/api/admin/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password })
+                });
+
+                if (response.ok) {
+                    setPassword(password);
+                    hideError();
+                    loginSection.hidden = true;
+                    adminSection.hidden = false;
+                    await fetchStatus();
+                } else {
+                    showError('Invalid password');
+                }
+            } catch (error) {
+                showError('Error connecting to server');
+            }
+        }
+
+        async function togglePause() {
+            const endpoint = isPaused ? '/api/admin/resume' : '/api/admin/pause';
+            const password = getPassword();
+
+            try {
+                actionBtn.disabled = true;
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password })
+                });
+
+                if (response.ok) {
+                    isPaused = !isPaused;
+                    updateUI();
+                } else if (response.status === 401) {
+                    sessionStorage.removeItem('adminPassword');
+                    loginSection.hidden = false;
+                    adminSection.hidden = true;
+                    showError('Session expired, please login again');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            } finally {
+                actionBtn.disabled = false;
+            }
+        }
+
+        loginBtn.addEventListener('click', () => {
+            const password = passwordInput.value;
+            if (password) {
+                login(password);
+            }
+        });
+
+        passwordInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const password = passwordInput.value;
+                if (password) {
+                    login(password);
+                }
+            }
+        });
+
+        actionBtn.addEventListener('click', togglePause);
+
+        // Check if already logged in
+        const savedPassword = getPassword();
+        if (savedPassword) {
+            login(savedPassword);
+        }
+    </script>
+</body>
+</html>

@@ -25,6 +25,14 @@ class Recommendation(Base):
     is_posted = Column(Boolean, default=False)
 
 
+class BotSettings(Base):
+    __tablename__ = "bot_settings"
+
+    id = Column(Integer, primary_key=True, index=True)
+    is_paused = Column(Boolean, default=False)
+    paused_at = Column(DateTime, nullable=True)
+
+
 def init_db():
     Base.metadata.create_all(bind=engine)
 

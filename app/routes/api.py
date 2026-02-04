@@ -1,9 +1,10 @@
+from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, field_validator
 from sqlalchemy.orm import Session
 import re
 
-from app.database import get_db, Recommendation
+from app.database import get_db, Recommendation, BotSettings
 from app.config import settings
 from app.services import songlink
 from app.services.telegram_bot import post_recommendation
@@ -125,3 +126,72 @@ async def trigger_post():
     """Manually trigger a Telegram post (for testing)."""
     await post_recommendation()
     return {"success": True, "message": "Post triggered"}
+
+
+class AdminLoginRequest(BaseModel):
+    password: str
+
+
+class AdminStatusResponse(BaseModel):
+    is_paused: bool
+    paused_at: str | None = None
+
+
+class AdminActionRequest(BaseModel):
+    password: str
+
+
+@router.post("/admin/login")
+async def admin_login(request: AdminLoginRequest):
+    """Verify admin password."""
+    if request.password != settings.ADMIN_PASSWORD:
+        raise HTTPException(status_code=401, detail="Invalid password")
+    return {"success": True}
+
+
+@router.get("/admin/status", response_model=AdminStatusResponse)
+async def admin_status(db: Session = Depends(get_db)):
+    """Get current bot status."""
+    bot_settings = db.query(BotSettings).first()
+    if not bot_settings:
+        return AdminStatusResponse(is_paused=False, paused_at=None)
+    return AdminStatusResponse(
+        is_paused=bot_settings.is_paused,
+        paused_at=bot_settings.paused_at.isoformat() if bot_settings.paused_at else None,
+    )
+
+
+@router.post("/admin/pause")
+async def admin_pause(request: AdminActionRequest, db: Session = Depends(get_db)):
+    """Pause the bot."""
+    if request.password != settings.ADMIN_PASSWORD:
+        raise HTTPException(status_code=401, detail="Invalid password")
+
+    bot_settings = db.query(BotSettings).first()
+    if not bot_settings:
+        bot_settings = BotSettings(is_paused=True, paused_at=datetime.utcnow())
+        db.add(bot_settings)
+    else:
+        bot_settings.is_paused = True
+        bot_settings.paused_at = datetime.utcnow()
+
+    db.commit()
+    return {"success": True, "message": "Bot paused"}
+
+
+@router.post("/admin/resume")
+async def admin_resume(request: AdminActionRequest, db: Session = Depends(get_db)):
+    """Resume the bot."""
+    if request.password != settings.ADMIN_PASSWORD:
+        raise HTTPException(status_code=401, detail="Invalid password")
+
+    bot_settings = db.query(BotSettings).first()
+    if not bot_settings:
+        bot_settings = BotSettings(is_paused=False, paused_at=None)
+        db.add(bot_settings)
+    else:
+        bot_settings.is_paused = False
+        bot_settings.paused_at = None
+
+    db.commit()
+    return {"success": True, "message": "Bot resumed"}

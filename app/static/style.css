@@ -53,7 +53,7 @@ label {
     color: #fff;
 }
 
-input, textarea {
+input, textarea, select {
     width: 100%;
     padding: 0.875rem 1rem;
     border: 2px solid rgba(255, 255, 255, 0.1);
@@ -64,10 +64,19 @@ input, textarea {
     transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-input:focus, textarea:focus {
+input:focus, textarea:focus, select:focus {
     outline: none;
     border-color: #1db954;
     box-shadow: 0 0 0 3px rgba(29, 185, 84, 0.2);
+}
+
+select {
+    cursor: pointer;
+}
+
+select option {
+    background: #1a1a2e;
+    color: #fff;
 }
 
 input::placeholder, textarea::placeholder {
@@ -152,6 +161,82 @@ footer {
     margin-top: 2rem;
     color: #666;
     font-size: 0.9rem;
+}
+
+/* Admin link in footer */
+.admin-link {
+    margin-top: 0.5rem;
+}
+
+.admin-link a {
+    color: #555;
+    text-decoration: none;
+    font-size: 0.8rem;
+}
+
+.admin-link a:hover {
+    color: #888;
+    text-decoration: underline;
+}
+
+/* Admin page styles */
+.admin-container {
+    max-width: 400px;
+}
+
+.login-form, .admin-panel {
+    text-align: center;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+    margin: 1rem 0;
+}
+
+.status-active {
+    background: rgba(29, 185, 84, 0.2);
+    color: #1db954;
+    border: 1px solid rgba(29, 185, 84, 0.4);
+}
+
+.status-paused {
+    background: rgba(231, 76, 60, 0.2);
+    color: #e74c3c;
+    border: 1px solid rgba(231, 76, 60, 0.4);
+}
+
+.admin-btn {
+    max-width: 200px;
+    margin: 1rem auto;
+}
+
+.admin-btn.pause-btn {
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+}
+
+.admin-btn.resume-btn {
+    background: linear-gradient(135deg, #1db954 0%, #1ed760 100%);
+}
+
+.login-error {
+    color: #e74c3c;
+    margin-top: 1rem;
+}
+
+.back-link {
+    margin-top: 1.5rem;
+}
+
+.back-link a {
+    color: #a8a8a8;
+    text-decoration: none;
+}
+
+.back-link a:hover {
+    text-decoration: underline;
 }
 
 @media (max-width: 480px) {
