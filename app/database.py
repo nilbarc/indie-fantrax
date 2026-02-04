@@ -1,7 +1,10 @@
+import logging
 from datetime import datetime
-from sqlalchemy import create_engine, Column, Integer, String, Text, Boolean, DateTime
+from sqlalchemy import create_engine, Column, Integer, String, Text, Boolean, DateTime, text
 from sqlalchemy.orm import sessionmaker, declarative_base
 from app.config import settings
+
+logger = logging.getLogger(__name__)
 
 engine = create_engine(settings.DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -36,6 +39,21 @@ class BotSettings(Base):
 
 def init_db():
     Base.metadata.create_all(bind=engine)
+    _run_migrations()
+
+
+def _run_migrations():
+    """Run database migrations for new columns."""
+    with engine.connect() as conn:
+        # Check if post_number column exists
+        result = conn.execute(text("""
+            SELECT column_name FROM information_schema.columns
+            WHERE table_name = 'recommendations' AND column_name = 'post_number'
+        """))
+        if result.fetchone() is None:
+            logger.info("Adding post_number column to recommendations table")
+            conn.execute(text("ALTER TABLE recommendations ADD COLUMN post_number INTEGER"))
+            conn.commit()
 
 
 def get_db():
