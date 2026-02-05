@@ -107,15 +107,20 @@ def format_recommendation_message(rec: Recommendation, post_number: int) -> str:
     """Format a recommendation for Telegram posting."""
     lines = [
         f"<b>Indie Fantrax Recommends - No. {post_number}</b>",
+        f"🙋 Selected by <b>{rec.submitter_name}</b>",
         "",
         f"🎵 <b>{rec.album_title or 'Unknown Album'}</b>",
         f"👤 {rec.artist_name or 'Unknown Artist'}",
         "",
-        f"📝 Recommended by <b>{rec.submitter_name}</b>:",
-        f"<i>{rec.context}</i>",
-        "",
-        "🔗 Listen:",
     ]
+
+    if rec.context:
+        lines.extend([
+            f"📝 <i>{rec.context}</i>",
+            "",
+        ])
+
+    lines.append("🔗 Listen:")
 
     if rec.spotify_url:
         lines.append(f"• <a href=\"{rec.spotify_url}\">Spotify</a>")
