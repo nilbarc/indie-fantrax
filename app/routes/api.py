@@ -7,7 +7,7 @@ import re
 from app.database import get_db, Recommendation, BotSettings
 from app.config import settings
 from app.services import songlink
-from app.services.telegram_bot import post_recommendation
+from app.services.telegram_bot import post_recommendation, send_test_message
 
 router = APIRouter(prefix="/api")
 
@@ -126,6 +126,13 @@ async def trigger_post():
     """Manually trigger a Telegram post (for testing)."""
     await post_recommendation()
     return {"success": True, "message": "Post triggered"}
+
+
+@router.post("/test-message")
+async def test_message():
+    """Send a test message to verify the bot can post to the group."""
+    await send_test_message()
+    return {"success": True, "message": "Test message sent"}
 
 
 class AdminLoginRequest(BaseModel):

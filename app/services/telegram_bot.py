@@ -103,6 +103,20 @@ async def post_recommendation():
         db.close()
 
 
+async def send_test_message():
+    """Send a simple test message to verify bot connectivity."""
+    if not settings.TELEGRAM_BOT_TOKEN or not settings.TELEGRAM_CHAT_ID:
+        logger.warning("Telegram credentials not configured")
+        return
+
+    bot = get_bot()
+    await bot.send_message(
+        chat_id=settings.TELEGRAM_CHAT_ID,
+        text="🎵 Indie Fantrax bot is connected and ready to post!",
+    )
+    logger.info("Test message sent successfully")
+
+
 def format_recommendation_message(rec: Recommendation, post_number: int) -> str:
     """Format a recommendation for Telegram posting."""
     lines = [
