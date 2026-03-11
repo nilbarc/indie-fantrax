@@ -95,6 +95,14 @@ textarea {
     color: #888;
 }
 
+.char-count {
+    display: block;
+    margin-top: 0.35rem;
+    font-size: 0.8rem;
+    color: #666;
+    text-align: right;
+}
+
 button {
     width: 100%;
     padding: 1rem;

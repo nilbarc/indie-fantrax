@@ -9,6 +9,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const resultAlbum = document.getElementById('result-album');
     const errorMessage = document.getElementById('error-message');
 
+    // Character counter for context field
+    const contextField = document.getElementById('context');
+    const contextCount = document.getElementById('context-count');
+    contextField.addEventListener('input', () => {
+        contextCount.textContent = contextField.value.length;
+    });
+
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
 
