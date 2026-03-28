@@ -1,5 +1,9 @@
+import asyncio
+
 import httpx
 from urllib.parse import quote
+
+MAX_RETRIES = 3
 
 
 async def get_songlink_data(url: str) -> dict:
@@ -11,8 +15,15 @@ async def get_songlink_data(url: str) -> dict:
     api_url = f"https://api.song.link/v1-alpha.1/links?url={encoded_url}"
 
     async with httpx.AsyncClient() as client:
-        response = await client.get(api_url, timeout=30.0)
-        response.raise_for_status()
+        for attempt in range(MAX_RETRIES):
+            response = await client.get(api_url, timeout=30.0)
+            if response.status_code == 429:
+                if attempt < MAX_RETRIES - 1:
+                    wait = 2 ** attempt
+                    await asyncio.sleep(wait)
+                    continue
+            response.raise_for_status()
+            break
         data = response.json()
 
     result = {
